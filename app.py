@@ -49,6 +49,42 @@ def method_name(symbol):
         return(f"{e}")
     finally:
         session.close()
+        
+@app.route('/update-stock/<int:id>', methods=['PATCH'])
+def updateStock(id):
+    data = request.get_json()
+    newName = data['name']
+    newSymbol = data['symbol']
+    newPrice = data['price']
+    try:
+        stock = session.query(Stock).filter(Stock.id == id).first()
+        stock.name = newName
+        stock.symbol = newSymbol
+        stock.price = newPrice
+        session.commit()
+        
+        if stock is None:
+            return("No stock available for given Id")
+        return("Stock updated")
+    except Exception as e:
+        session.rollback()
+        return(f"{e}")
+    
+    finally:
+        session.close()
+        
+@app.route("/delete-stock/<int:id>", methods=['DELETE'])
+def deleteStock(id):
+    try:
+        stock = session.query(Stock).filter(Stock.id == id).first()
+        session.delete(stock)
+        session.commit()
+        return("Stock has been deleted Successfully")
+    except Exception as e:
+        session.rollback()
+        return(f"{e}")
+    finally:
+        session.close()
 
 
 app.run(debug=True)
